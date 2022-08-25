@@ -2,26 +2,14 @@ package main
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/xuri/excelize/v2"
 )
 
-type SearchedData struct {
-	Year    string
-	ListLen int
-}
-
-func (sd *SearchedData) SearchForThisYear(Year string) {
-	sd.Year = Year
-	sd.writeSpreadsheet()
-}
-
-func ReadSpreadsheet() [][]string {
-
-	// Create a new slice, then add column URL to slices
-
+func readSpreadsheet() [2][]string {
 	// Multi-dim array, title and url.
-	spreadsheetData := make([][]string, 2)
+	spreadsheetData := [2][]string{}
 
 	f, err := excelize.OpenFile("apsyl.xlsx")
 	Enil(err)
@@ -36,34 +24,42 @@ func ReadSpreadsheet() [][]string {
 	Enil(err)
 
 	// Goes by each column and returns row value
-	for i, col := range cols {
-		for j, rowCell := range col {
-			// Add title and URL to URL and title field.
-			spreadsheetData[i][j] = rowCell[32:]
+	for i := range cols[:2] {
+		for j := 1; j < len(cols[i:2])-1; j++ {
+			// Add title and URL to title and URL field.
+			if i == 1 {
+				spreadsheetData[i][j] = cols[i][j][32:]
+			} else {
+				spreadsheetData[i][j] = cols[i][j]
+			}
 		}
 	}
 	return spreadsheetData
 }
 
-func (sd *SearchedData) writeSpreadsheet() {
+func writeSpreadsheet(sv *SortedVideos) {
+	rd, year := sv.export()
+	columnAxis := [3]string{
+		"A",
+		"B",
+		"C",
+	}
+
 	f := excelize.NewFile()
-	index := f.NewSheet(fmt.Sprintf("%d", sd.Year))
-	// f.SetCellValue()
+	index := f.NewSheet(year)
 	f.SetActiveSheet(index)
+
+	// Can use go routines here to do multiple column work.
+	// Writes out all sorted data to excel rows
+	for i := 0; i < len(columnAxis); i++ {
+		for j := range rd {
+			axis := columnAxis[i] + strconv.Itoa(j)
+			err := f.SetCellStr(sv.Year, axis, sv.getVideoField(j, rd[i]))
+			Enil(err)
+		}
+	}
 
 	if err := f.SaveAs("output.xlsx"); err != nil {
 		fmt.Println(err)
 	}
-}
-
-// Export the sorted list of data to new excel file
-func Export(sv *SortedVideos) {
-
-	func() {
-		f := excelize.NewFile()
-		index := f.NewSheet(sv.Year)
-		f.SetActiveSheet(index)
-		err := f.SaveAs("output.xlsx")
-		Enil(err)
-	}()
 }

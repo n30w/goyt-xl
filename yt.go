@@ -16,7 +16,7 @@ type RelevantData struct {
 }
 
 // Returns RelevantData struct, to be used in excel file
-func (rd *RelevantData) ReturnRelevantData(id string) *RelevantData {
+func (rd *RelevantData) returnRelevantData(id string) *RelevantData {
 	return rd.setFields(rd.retrieveRelevantData(id))
 }
 
