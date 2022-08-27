@@ -21,8 +21,9 @@ func (rd *RelevantData) returnRelevantData(id string) *RelevantData {
 }
 
 func (rd *RelevantData) setFields(pd, vc string) *RelevantData {
-	rd.PD = pd
+	rd.PD = pd[:4]
 	rd.VC = vc
+	// fmt.Println(rd.PD, rd.VC)
 	return rd
 }
 
