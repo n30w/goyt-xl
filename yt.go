@@ -1,8 +1,6 @@
-/*
-Retrieve YouTube data
-*/
-
 package main
+
+// YouTube video getter, returns metadata info
 
 import (
 	"github.com/kkdai/youtube/v2"
@@ -23,13 +21,11 @@ func (rd *RelevantData) returnRelevantData(id string) *RelevantData {
 func (rd *RelevantData) setFields(pd, vc string) *RelevantData {
 	rd.PD = pd[:4]
 	rd.VC = vc
-	// fmt.Println(rd.PD, rd.VC)
 	return rd
 }
 
 func (rd *RelevantData) retrieveRelevantData(id string) (string, string) {
 	client := youtube.Client{}
-
 	video, err := client.GetVideo(id)
 	Enil(err)
 	return video.PublishDate.Format("2006-01-02"), video.ViewCount

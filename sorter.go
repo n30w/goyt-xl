@@ -1,27 +1,26 @@
 package main
 
+// Sorts dates given appropriate year and puts them into respective slices
+
 import (
 	"fmt"
 	"strconv"
 )
 
-// This file will sort the dates, given a year
-
 type SortedVideos struct {
-	List       []string
-	ingestList []RelevantData
-	Year       string
-	YearCount  int
-	ColumnLen  float64
+	List         []string
+	IngestVideos []RelevantData
+	Year         string
+	YearCount    int
+	ColumnLen    float64
 }
 
 // Exports data for use in xl.go
 func (sv *SortedVideos) export() ([]RelevantData, string) {
-	return sv.ingestList, sv.Year
+	return sv.IngestVideos, sv.Year
 }
 
-// gets video field based on iteration via uint8 value
-// This is probably a terrible way to do this. Switches aren't meant for this, I think. Lol.
+// Gets video field based on iteration via int value. This is probably a terrible way to do this. Switches aren't meant for this, I think. Lol.
 func (sv *SortedVideos) getVideoField(index int, rv RelevantData) string {
 	var field string
 	switch index {
@@ -35,17 +34,15 @@ func (sv *SortedVideos) getVideoField(index int, rv RelevantData) string {
 	return field
 }
 
-// This function will ingest videos from  the excel sheet
+// Ingests videos and puts them in appropriate slice
 func (sv *SortedVideos) ingestVideos() {
 	data := readSpreadsheet()
-	// rd := make([]RelevantData, len(data[0]))
+	rd := make([]RelevantData, len(data[0]))
 	sv.Year = "2021"
 
-	rd := make([]RelevantData, len(data[0]))
 	// Starts at 1 since the very first index is the column header
-	// removing https://youtube.com/... and just using the videoID
 	for i := 1; i < len(data[1]); i++ {
-		data[1][i] = data[1][i][32:]
+		data[1][i] = data[1][i][32:] // Removes youtube.com url
 	}
 
 	data[0] = data[0][1:]
@@ -60,36 +57,34 @@ func (sv *SortedVideos) ingestVideos() {
 		fmt.Println("PROCESSING:", data[0][i])
 		rd[i] = d
 	}
-
-	sv.ingestList = rd
-	// fmt.Println(sv.ingestList)
+	sv.IngestVideos = rd
 }
 
-// Only look for target year
+// Remove everything but target year from slice
 func (sv *SortedVideos) removeIrrelevantYears() {
 	const COLUMNLENFACTOR = 0.83
 	var sorted []RelevantData
 
-	for i := 0; i < len(sv.ingestList); i++ {
-		if sv.ingestList[i].PD == sv.Year {
-			sorted = append(sorted, sv.ingestList[i])
+	for i := 0; i < len(sv.IngestVideos); i++ {
+		if sv.IngestVideos[i].PD == sv.Year {
+			sorted = append(sorted, sv.IngestVideos[i])
 
 			// Add to total year view count
-			k, err := strconv.Atoi(sv.ingestList[i].VC)
+			k, err := strconv.Atoi(sv.IngestVideos[i].VC)
 			Enil(err)
 			sv.YearCount += k
 
-			// update length of column width
+			// Update length of column width
 			if i != 0 {
-				prev := len(sv.ingestList[i-1].T)
-				cur := len(sv.ingestList[i].T)
+				prev := len(sv.IngestVideos[i-1].T)
+				cur := len(sv.IngestVideos[i].T)
 				if cur > prev {
 					sv.ColumnLen = float64(cur) * COLUMNLENFACTOR
 				}
 			} else {
-				sv.ColumnLen = float64(len(sv.ingestList[0].T))
+				sv.ColumnLen = float64(len(sv.IngestVideos[0].T))
 			}
 		}
 	}
-	sv.ingestList = sorted
+	sv.IngestVideos = sorted
 }

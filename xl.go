@@ -1,5 +1,7 @@
 package main
 
+// Handles any Excel duties, spreadsheet wise
+
 import (
 	"fmt"
 	"strconv"
@@ -10,6 +12,7 @@ import (
 func readSpreadsheet() [][]string {
 	f, err := excelize.OpenFile("apsyl.xlsx")
 	Enil(err)
+
 	defer func() {
 		// Close the spreadsheet
 		if err := f.Close(); err != nil {
@@ -17,10 +20,8 @@ func readSpreadsheet() [][]string {
 		}
 	}()
 
-	cols, err := f.GetCols("punahou")
+	cols, err := f.GetCols("punavision")
 	Enil(err)
-	// fmt.Println(len(cols[0]))
-	// fmt.Println(cols[1][3][32:])
 	return cols[:2]
 }
 
@@ -52,8 +53,6 @@ func writeSpreadsheet(sv *SortedVideos) {
 
 	// Can use go routines here to do multiple column work.
 
-	// Writes out all sorted data to excel rows
-
 	// Adds titles to A column
 	for i := 0; i < 1; i++ {
 		for j := range rd {
@@ -62,6 +61,7 @@ func writeSpreadsheet(sv *SortedVideos) {
 			Enil(err)
 		}
 	}
+
 	// Convert strings to int
 	for i := 1; i < 3; i++ {
 		for j := range rd {
